@@ -46,7 +46,7 @@ typedef struct{
         int type;
         int credit;
         int energy;
-} smmObj_board_t;
+} smmObj_board_t; 
 
 //structure instance array deifinition
 static smmObj_board_t smmObj_board[MAX_CHARNAME];

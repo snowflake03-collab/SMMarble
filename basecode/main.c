@@ -22,22 +22,25 @@ static int food_nr;
 static int festival_nr;
 static int player_nr;
 
-#if 0
+#if 1
 static int player_pos[MAX_PLAYER];
 static int player_credit[MAX_PLAYER];
 static int player_name[MAX_PLAYER][MAX_CHARNAME];
 static int player_energy[MAX_PLAYER];
 #endif
 
+#if 0 
 typedef struct{
         int pos;
         int credit;
         char name[MAX_CHARNAME];
         int energy;
-} player_t;
+} smm_player_t;
 
-player_t players[MAX_PLAYER];
+smm_player_t smm_players[MAX_PLAYER];
 
+int generate_players;
+#endif 
 
 
 void generatePlayers(int n, int initEnergy); //generate a new player
@@ -159,7 +162,6 @@ int main(int argc, const char * argv[]) {
     printf("Total number of board nodes : %i\n", board_nr);
     
     
-#if 0
     //2. food card config 
     if ((fp = fopen(FOODFILEPATH,"r")) == NULL)
     {
@@ -168,15 +170,20 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("\n\nReading food card component......\n");
-    while () //read a food parameter set
+    while (fscanf(fp, "%s %i", name, &energy) == 2) //read a food parameter set
     {
+        //변수 덮어써서 쓰자 
         //store the parameter set
+        printf("%s %i\n", name, energy); 
+        //food_nr = smmObj_genNode(name, energy);
+        // 음... 파일 읽어오는 것 까지는 성공, 근데 그렇게 읽은 데이터를 세질 못하고 있어 
     }
     fclose(fp);
     printf("Total number of food cards : %i\n", food_nr);
     
     
-    
+
+#if 0  
     //3. festival card config 
     if ((fp = fopen(FESTFILEPATH,"r")) == NULL)
     {
@@ -194,6 +201,8 @@ int main(int argc, const char * argv[]) {
     
     
 #endif
+
+
     //2. Player configuration ---------------------------------------------------------------------------------
 
     do
