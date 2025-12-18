@@ -78,7 +78,7 @@ char* smmObj_gettypeName(int node_type)
 }
 
 
-//food 카드 처리 관련 
+//food 카드 
 static int smm_food_nr = 0;
 
 typedef struct
@@ -99,7 +99,24 @@ int smmObj_genFood(char* name, int energy)
     return smm_food_nr;
 }
 
+//festival 카드
+static int smm_festival_nr = 0;
 
+typedef struct
+{
+    char name[MAX_NAME]; //그냥 NODENR 매크로 같이 써도 되지 않아?? 
+} smm_festival_t;
+
+static smm_festival_t smm_festival[MAX_NAME];
+
+int smmObj_genFestival(char* name)
+{
+    strcpy(smm_Food[smm_food_nr].name, name);
+    
+    smm_festival_nr++;
+    
+    return smm_festival_nr;
+}
 
 #if 0
 //element to string

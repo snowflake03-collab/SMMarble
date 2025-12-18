@@ -40,6 +40,8 @@ int generate_players;
 void generatePlayers(int n, int initEnergy); //generate a new player
 void printPlayerStatus(void); //print all player status at the beginning of each turn
 
+
+
 //function prototypes
 #if 0
 void printGrades(int player); //print grade history of the player
@@ -156,8 +158,13 @@ void actionNode(int player)
              
         //2번, 3번 짠 이후에  
         case SMMNODE_TYPE_FOODCHANGE:
+             //근데 무작위뢰 골라야하니까
+             {int chosen_Food = rand() % smm_food_nr; 
              
-                    
+             //음식카드 고르면 -> 에너지를 보충할 수가 있어 
+             smm_players[player].energy += smm_food[chosen_Food].energy;
+             }
+             //static 때문에 바로 가져오질 못하는 듯... 
              break;
              
              
@@ -223,15 +230,11 @@ int main(int argc, const char * argv[]) {
         //store the parameter set
         printf("%s %i\n", name, energy); 
         smm_food_nr = smmObj_genFood(name, energy);
-        
-        // 음... 파일 읽어오는 것 까지는 성공, 근데 그렇게 읽은 데이터를 세질 못하고 있어 
     }
     fclose(fp);
     printf("Total number of food cards : %i\n", smm_food_nr);
     
     
-
-#if 0  
     //3. festival card config 
     if ((fp = fopen(FESTFILEPATH,"r")) == NULL)
     {
@@ -240,15 +243,20 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("\n\nReading festival card component......\n");
-    while () //read a festival card string
-    {
+    while (fscanf(fp, "%s", name) == 1) //read a festival card string
+    {//축제는 문자열 하나씩이니까  
         //store the parameter set
+        //위의 경우랑 비슷하게 참고해서 하면 됨 
+        printf("%s\n", name);
+        smm_festival_nr = smmObj_genFestival(name);
+        //?? 여기선 숫자 세는 거 의미가 있나?  앗 그냥 출력만 하면   
+        //아 이미 basecode에 숫자 출력하는 게 있구나 
     }
     fclose(fp);
     printf("Total number of festival cards : %i\n", smm_festival_nr);
     
     
-#endif
+    
 
 
     //2. Player configuration ---------------------------------------------------------------------------------
