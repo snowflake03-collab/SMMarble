@@ -60,22 +60,22 @@ int smmObj_genNode(char* name, int type, int credit, int energy)
 
 
 //member retrieving
-char* smmObj_getNodeName(int node_nr)
+char* smmObj_getNodeName(int (node_nr))
 {
-      return(smmObj_board[smmObj_nodeNr].name);      
+      return(smmObj_board[node_nr].name);      
 }
 
 int smmObj_getNodeType(int (node_nr))
 {
-    return (smmObj_board[smmObj_nodeNr].type);
+    return (smmObj_board[node_nr].type);
 }
     
 int smmObj_getNodeCredit(int (node_nr))
 {
-    return (smmObj_board[smmObj_nodeNr].credit);
+    return (smmObj_board[node_nr].credit);
 }
 
-int smmObj_getNodeEnergy(int node_nr)
+int smmObj_getNodeEnergy(int (node_nr))
 {
     return (smmObj_board[node_nr].energy);
     //어라, energy가 18로 나와야 하는데 credit이 나오는데... 

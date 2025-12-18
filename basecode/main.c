@@ -24,9 +24,9 @@ static int smm_player_nr;
 
 #if 1
 typedef struct{
+        char name[MAX_CHARNAME];
         int pos;
         int credit;
-        char name[MAX_CHARNAME];
         int flag_graduated;
         int energy;
 } smm_player_t;
@@ -82,7 +82,8 @@ void printPlayerStatus(void) //print all player status at the beginning of each 
      int i;
      for(i = 0; i < smm_player_nr ; i++)
      {
-         printf("%s - position:%i(%s), credit:%i, energy:%i\n", smm_players[i].name, smm_players[i].pos, smmObj_getNodeName(smm_players[i].pos), smm_players[i].energy);
+         //잘못 나왔던 원인 찾은듯!  
+         printf("%s - position:%i(%s), credit:%i, energy:%i\n", smm_players[i].name, smm_players[i].pos, smmObj_getNodeName(smm_players[i].pos), smm_players[i].credit, smm_players[i].energy);
      }
 }
 
@@ -97,7 +98,7 @@ void generatePlayers(int n, int initEnergy) //generate a new player
          smm_players[i].energy = initEnergy;
          smm_players[i].flag_graduated = 0;
          
-         printf("Input %i-th player name:");
+         printf("Input %i-th player name:",i+1);
          scanf("%s", &smm_players[i].name[0]);
          fflush(stdin);
      }      
@@ -124,13 +125,14 @@ int rolldie(int player)
 void actionNode(int player)
 {
     int type = smmObj_getNodeType(smm_players[player].pos); 
-    int credit = smmObj_getNodeCredit(player);
-    int energy = smmObj_getNodeEnergy(player);
+    int credit = smmObj_getNodeCredit(smm_players[player].pos);
+    int energy = smmObj_getNodeEnergy(smm_players[player].pos);
     
     switch(type)
     {
+        
         case SMMNODE_TYPE_LECTURE:
-             smm_players[player].credit += credit;
+             smm_players[player].credit += credit; 
              smm_players[player].energy -= energy;
              break;
              
@@ -298,3 +300,5 @@ int main(int argc, const char * argv[]) {
     system("PAUSE");
     return 0;
 }
+
+//지금 해결해야 할 문제: 종료조건이 제대로 작동을 안해,  
