@@ -13,14 +13,6 @@
 #define MAX_NODETYPE    7
 #define MAX_GRADE       9
 
-#define SMMNODE_TYPE_LECTURE       0
-#define SMMNODE_TYPE_RESTUARANT    1
-#define SMMNODE_TYPE_LABORATORY    2
-#define SMMNODE_TYPE_HOME          3
-#define SMMNODE_TYPE_GOTOLAB       4
-#define SMMNODE_TYPE_FOODCHANGE    5
-#define SMMNODE_TYPE_FESTIVAL      6
-
 static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
        "lecture",
        "restaurant",
@@ -77,10 +69,16 @@ int smmObj_getNodeType(int (node_nr))
 {
     return (smmObj_board[smmObj_nodeNr].type);
 }
+    
+int smmObj_getNodeCredit(int (node_nr))
+{
+    return (smmObj_board[smmObj_nodeNr].credit);
+}
 
 int smmObj_getNodeEnergy(int node_nr)
 {
-    return (smmObj_board[smmObj_nodeNr].energy);
+    return (smmObj_board[node_nr].energy);
+    //어라, energy가 18로 나와야 하는데 credit이 나오는데... 
 }
 
 char* smmObj_gettypeName(int node_type)
