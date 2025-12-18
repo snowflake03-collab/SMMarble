@@ -11,7 +11,8 @@
 
 #define MAX_NODENR      100
 #define MAX_NODETYPE    7
-#define MAX_GRADE       9      
+#define MAX_GRADE       9     
+#define MAX_NAME        40
 
 static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
        "lecture",
@@ -77,9 +78,16 @@ char* smmObj_gettypeName(int node_type)
 }
 
 
-
+//food 카드 처리 관련 
 static int smm_food_nr = 0;
-static smm_Food_t smm_Food[MAX_NODENR];
+
+typedef struct
+{
+    char name[MAX_NAME];
+    int energy;
+} smm_Food_t;
+
+static smm_Food_t smm_Food[MAX_NAME];
 
 int smmObj_genFood(char* name, int energy)
 {
