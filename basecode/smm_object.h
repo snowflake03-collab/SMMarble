@@ -50,6 +50,8 @@ int smmObj_getNodeEnergy(int node_nr);
 char* smmObj_getTypeName(int node_type);
 int smmObj_getNodeCredit(int (node_nr));
 
+int smmObj_genFood(char* name, int energy);
+
 //member retrieving
 
 

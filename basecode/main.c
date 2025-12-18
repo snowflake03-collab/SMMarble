@@ -155,7 +155,9 @@ void actionNode(int player)
              break;
              
         //2번, 3번 짠 이후에  
-        case SMMNODE_TYPE_FOODCHANGE:       
+        case SMMNODE_TYPE_FOODCHANGE:
+             
+                    
              break;
              
              
@@ -213,14 +215,15 @@ int main(int argc, const char * argv[]) {
         printf("[ERROR] failed to open %s. This file should be in the same directory of SMMarble.exe.\n", FOODFILEPATH);
         return -1;
     }
-    
+    //변수 덮어써서 쓰자 
     printf("\n\nReading food card component......\n");
     while (fscanf(fp, "%s %i", name, &energy) == 2) //read a food parameter set
     {
-        //변수 덮어써서 쓰자 
+        
         //store the parameter set
         printf("%s %i\n", name, energy); 
-        //food_nr = smmObj_genNode(name, energy);
+        smm_food_nr = smmObj_genFood(name, energy);
+        
         // 음... 파일 읽어오는 것 까지는 성공, 근데 그렇게 읽은 데이터를 세질 못하고 있어 
     }
     fclose(fp);
@@ -287,6 +290,7 @@ int main(int argc, const char * argv[]) {
         goForward(turn, die_result);
         
         //pos = pos + 2;
+        //지나가도 action 해야되는 경우 if문으로 넣어주자 
         
 		//4-4. take action at the destination node of the board
         actionNode(turn);
@@ -301,4 +305,5 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-//지금 해결해야 할 문제: 종료조건이 제대로 작동을 안해,  
+//지금 해결해야 할 문제: 종료조건이 제대로 작동을 안해, 
+//....? 아닌가?? 아직 작성 안한 부분 때문에 그런가?  

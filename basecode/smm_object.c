@@ -11,7 +11,7 @@
 
 #define MAX_NODENR      100
 #define MAX_NODETYPE    7
-#define MAX_GRADE       9
+#define MAX_GRADE       9      
 
 static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
        "lecture",
@@ -25,14 +25,6 @@ static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
 
 static int smmObj_nodeNr = 0;
 
-#if 0
-static int smm_nodeNr = 0;
-static char smm_name[MAX_NODENR][MAX_CHARNAME];
-static int smm_type[MAX_NODENR];
-static int smm_credit[MAX_NODENR];
-static int smm_energy[MAX_NODENR];
-#endif
-
 typedef struct{
         char name[MAX_CHARNAME];
         int type;
@@ -42,7 +34,6 @@ typedef struct{
 
 //structure instance array deifinition
 static smmObj_board_t smmObj_board[MAX_CHARNAME];
-
 
 //object generation
 int smmObj_genNode(char* name, int type, int credit, int energy)
@@ -56,7 +47,6 @@ int smmObj_genNode(char* name, int type, int credit, int energy)
     
     return (smmObj_nodeNr);
 }
-
 
 
 //member retrieving
@@ -86,6 +76,20 @@ char* smmObj_gettypeName(int node_type)
       return (smmObj_NodeName[node_type]);
 }
 
+
+
+static int smm_food_nr = 0;
+static smm_Food_t smm_Food[MAX_NODENR];
+
+int smmObj_genFood(char* name, int energy)
+{
+    strcpy(smm_Food[smm_food_nr].name, name);
+    smm_Food[smm_food_nr].energy = energy;
+    
+    smm_food_nr++;
+    
+    return smm_food_nr;
+}
 
 
 
