@@ -31,7 +31,8 @@ typedef struct{
         int energy;
 } smm_player_t;
 
-smm_player_t smm_players[MAX_PLAYER];
+//동적 메모리 할당 
+smm_player_t *smm_players;
 
 int generate_players;
 #endif 
@@ -47,10 +48,28 @@ void printPlayerStatus(void); //print all player status at the beginning of each
 void printGrades(int player); //print grade history of the player
 float calcAverageGrade(int player); //calculate average grade of the player
 smmGrade_e takeLecture(int player, char *lectureName, int credit); //take the lecture (insert a grade of the player)
-void* findGrade(int player, char *lectureName); //find the grade from the player's grade history
+
 void printGrades(int player); //print all the grade history of the player
 #endif
 
+
+void* findGrade(int player, char *lectureName) //find the grade from the player's grade history
+{
+      int size = smmdb_len(LISTNO_OFFSET_GRADE+player);
+      int i;
+      
+      for(i = 0; i < size; i++)
+      {
+          void *ptr = smmdb_getdata(LISTNO_OFFSET_GRADE+player, i);
+          if (strcmp(smmObj_getObjectName(ptr), lectureName) == 0)
+          {
+              return ptr;
+          }
+      }
+      
+      return NULL;
+      
+}
 
 int isGraduated(void) //check if any player is graduated
 {
@@ -68,14 +87,16 @@ void goForward(int player, int step)
 {
      //make player go "step" steps on the board (check if player is graduated)
     int i;
+    void *ptr;
     //player_pos[] = player_pos[] + step;
+    ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
     printf("start from %i(%s)\n", smm_players[player].pos, 
-                                          smmObj_getNodeName(smm_players[player].pos), step);
+                                          smmObj_getNodeName(ptr) , step);
     for (i = 0; i < step; i++)
     {   
         smm_players[player].pos = (smm_players[player].pos + 1)%smm_board_nr;
         printf("   => moved to %i(%s)\n", smm_players[player].pos, 
-                                          smmObj_getNodeName(smm_players[player].pos));
+                                          smmObj_getNodeName(smmObj_getNodeName(ptr), step)); //smm_players[player].pos)
     }
 }
 
@@ -93,6 +114,9 @@ void printPlayerStatus(void) //print all player status at the beginning of each 
 void generatePlayers(int n, int initEnergy) //generate a new player
 {
      int i;
+     
+     smm_players = malloc(n*sizeof(smm_player_t));
+     
      for(i = 0; i < n; i++)
      {
          smm_players[i].pos = 0;
@@ -114,9 +138,9 @@ int rolldie(int player)
     c = getchar();
     fflush(stdin);
     
-#if 0
+#if 1
     if (c == 'g')
-        printGrades(player);
+        printGrades(player); //이 함수 구현하면 됨 
 #endif
     
     return (rand()%MAX_DIE + 1);
@@ -126,16 +150,29 @@ int rolldie(int player)
 //action code when a player stays at a node
 void actionNode(int player)
 {
+    void *ptr = smmdb_getData(LISTNO_NODE,smm_players[player].pos);
     int type = smmObj_getNodeType(smm_players[player].pos); 
     int credit = smmObj_getNodeCredit(smm_players[player].pos);
     int energy = smmObj_getNodeEnergy(smm_players[player].pos);
+    int grade; 
+    void *gradePtr;
     
     switch(type)
     {
         
         case SMMNODE_TYPE_LECTURE:
+        if(findGrade() == NULL) //해당하는 과목명, 들었던 과목 재수강안함 
+        {
              smm_players[player].credit += credit; 
              smm_players[player].energy -= energy;
+             
+             grade = rand() % SMMNODE_MAX_GRADE;
+             
+             gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, 
+             type , credit, energy, SMMNODE_MAX_GRADE);
+             
+             smmdb_addTail(LISTNO_OFFSET_GRADE+player, gradePtr);
+        }
              break;
              
         case SMMNODE_TYPE_RESTUARANT:     
@@ -162,7 +199,7 @@ void actionNode(int player)
              {int chosen_Food = rand() % smm_food_nr; 
              
              //음식카드 고르면 -> 에너지를 보충할 수가 있어 
-             smm_players[player].energy += smm_food[chosen_Food].energy;
+             //smm_players[player].energy += smm_food[chosen_Food].energy;
              }
              //static 때문에 바로 가져오질 못하는 듯... 
              break;
@@ -209,8 +246,10 @@ int main(int argc, const char * argv[]) {
     while (fscanf(fp, "%s %i %i %i", name, &type, &credit, &energy) == 4) //read a node parameter set
     {
         //store the parameter set
+        void* ptr;
         printf("%s %i %i %i\n", name, type, credit, energy); 
-        smm_board_nr = smmObj_genNode(name, type, credit, energy);
+        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_BOARD, type, credit, energy, 0);
+        smm_board_nr = smmdb_addTail(LISTNO_NODE, ptr);  
     }
     fclose(fp);
     printf("Total number of board nodes : %i\n", smm_board_nr);
@@ -226,10 +265,10 @@ int main(int argc, const char * argv[]) {
     printf("\n\nReading food card component......\n");
     while (fscanf(fp, "%s %i", name, &energy) == 2) //read a food parameter set
     {
-        
+        void* ptr;
         //store the parameter set
         printf("%s %i\n", name, energy); 
-        smm_food_nr = smmObj_genFood(name, energy);
+        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FOOD, 0, 0, energy, 0);
     }
     fclose(fp);
     printf("Total number of food cards : %i\n", smm_food_nr);
@@ -244,13 +283,11 @@ int main(int argc, const char * argv[]) {
     
     printf("\n\nReading festival card component......\n");
     while (fscanf(fp, "%s", name) == 1) //read a festival card string
-    {//축제는 문자열 하나씩이니까  
+    {  
         //store the parameter set
-        //위의 경우랑 비슷하게 참고해서 하면 됨 
+        void* ptr;
         printf("%s\n", name);
-        smm_festival_nr = smmObj_genFestival(name);
-        //?? 여기선 숫자 세는 거 의미가 있나?  앗 그냥 출력만 하면   
-        //아 이미 basecode에 숫자 출력하는 게 있구나 
+        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FEST, 0, 0, 0, 0);
     }
     fclose(fp);
     printf("Total number of festival cards : %i\n", smm_festival_nr);
@@ -275,7 +312,7 @@ int main(int argc, const char * argv[]) {
     
     
 
-    generatePlayers(smm_player_nr, smmObj_getNodeEnergy(0));
+    generatePlayers(smm_player_nr, smmObj_getTypeName(smmdb_getData(SMMNODE_OBJTYPE_BOARD, 0)));
 
     
 
@@ -308,6 +345,8 @@ int main(int argc, const char * argv[]) {
     }
     
 #endif
+
+    free(smm_players);
 
     system("PAUSE");
     return 0;
