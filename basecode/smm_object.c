@@ -12,7 +12,8 @@
 #define MAX_NODENR      100
 #define MAX_NODETYPE    7
 #define MAX_GRADE       9     
-#define MAX_NAME        40
+//이거 괜히 만들었는데 그러면...어쩐지 food랑 festival은 함수가 없더라#define MAX_NAME        40
+#define OBJTYPE_BOARD 
 
 static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
        "lecture",
@@ -26,15 +27,17 @@ static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
 
 static int smmObj_nodeNr = 0;
 
+//structure type definition 
 typedef struct{
         char name[MAX_CHARNAME];
+        int objType;
         int type;
         int credit;
         int energy;
-} smmObj_board_t; 
+        int grade;
+} smmObj_object_t; 
 
-//structure instance array deifinition
-static smmObj_board_t smmObj_board[MAX_CHARNAME];
+
 
 //object generation
 int smmObj_genNode(char* name, int type, int credit, int energy)
