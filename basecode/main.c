@@ -15,6 +15,7 @@
 #define FOODFILEPATH "marbleFoodConfig.txt"
 #define FESTFILEPATH "marbleFestivalConfig.txt"
 
+//으아아악! 무한 루프에 걸렸어!! 
 
 //board configuration parameters
 static int smm_board_nr;
@@ -22,7 +23,6 @@ static int smm_food_nr;
 static int smm_festival_nr;
 static int smm_player_nr;
 
-#if 1
 typedef struct{
         char name[MAX_CHARNAME];
         int pos;
@@ -35,7 +35,7 @@ typedef struct{
 smm_player_t *smm_players;
 
 int generate_players;
-#endif 
+
 
 
 void generatePlayers(int n, int initEnergy); //generate a new player
@@ -71,6 +71,7 @@ void* findGrade(int player, char *lectureName) //find the grade from the player'
       
 }
 
+
 int isGraduated(void) //check if any player is graduated
 {
     int i;
@@ -90,14 +91,17 @@ void goForward(int player, int step)
     //make player go "step" steps on the board (check if player is graduated)
     int i;
     void *ptr;
+    void *current_node_ptr;
+    
     //player_pos[] = player_pos[] + step;
     ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
     printf("start from %i(%s)\n", smm_players[player].pos, smmObj_getObjectName(ptr));
     for (i = 0; i < step; i++)
     {   
-        smm_players[player].pos = (smm_players[player].pos + 1)%smm_board_nr;
-        printf("   => moved to %i(%s)\n", smm_players[player].pos, 
-                                          smmObj_getObjectName(smmObj_getObjectName(ptr)));
+        smm_players[player].pos = (smm_players[player].pos + 1) % smm_board_nr;
+        void* current_node_ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
+        printf("    => moved to %i(%s)\n", smm_players[player].pos, smmObj_getObjectName(current_node_ptr));
+    }
 }
 
 
@@ -108,8 +112,8 @@ void printPlayerStatus(void) //print all player status at the beginning of each 
      
      for(i = 0; i < smm_player_nr ; i++)
      {
-         void* ptr = ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
-         //잘못 나왔던 원인 찾은듯!  
+         void* ptr = smmdb_getData(LISTNO_NODE, smm_players[i].pos);
+ 
          printf("%s - position:%i(%s), credit:%i, energy:%i\n", 
          smm_players[i].name, 
          smm_players[i].pos, 
@@ -147,15 +151,14 @@ int rolldie(int player)
     c = getchar();
     fflush(stdin);
     
-#if 1
+
     if (c == 'g')
-        printGrades(player); //이 함수 구현하면 됨 
-#endif
+        //printGrades(player); //이 함수 구현하면 됨 
+
     
     return (rand()%MAX_DIE + 1);
 }
 
-#if 1
 //action code when a player stays at a node
 void actionNode(int player)
 {
@@ -193,7 +196,7 @@ void actionNode(int player)
              
         case SMMNODE_TYPE_HOME:       
              smm_players[player].energy += energy;
-             if(smm_players[player].credit <= GRADUATE_CREDIT)
+             if(smm_players[player].credit >= GRADUATE_CREDIT)
              {
                  smm_players[player].flag_graduated = 1;                   
              }
@@ -223,7 +226,7 @@ void actionNode(int player)
             break;
     }
 }
-#endif 
+
 
 
 int main(int argc, const char * argv[]) {
@@ -255,10 +258,10 @@ int main(int argc, const char * argv[]) {
     while (fscanf(fp, "%s %i %i %i", name, &type, &credit, &energy) == 4) //read a node parameter set
     {
         //store the parameter set
-        void* ptr;
         printf("%s %i %i %i\n", name, type, credit, energy); 
-        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_BOARD, type, credit, energy, 0);
-        smm_board_nr = smmdb_addTail(LISTNO_NODE, ptr);  
+        void* ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_BOARD, type, credit, energy, 0);
+        smmdb_addTail(LISTNO_NODE, ptr);
+        smm_board_nr++;
     }
     fclose(fp);
     printf("Total number of board nodes : %i\n", smm_board_nr);
@@ -274,10 +277,11 @@ int main(int argc, const char * argv[]) {
     printf("\n\nReading food card component......\n");
     while (fscanf(fp, "%s %i", name, &energy) == 2) //read a food parameter set
     {
-        void* ptr;
         //store the parameter set
         printf("%s %i\n", name, energy); 
-        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FOOD, 0, 0, energy, 0);
+        void* ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FOOD, 0, 0, energy, 0);
+        smmdb_addTail(LISTNO_FOODCARD, ptr);  
+        smm_food_nr++; //이렇게 세는게... 으음 최선? 
     }
     fclose(fp);
     printf("Total number of food cards : %i\n", smm_food_nr);
@@ -294,9 +298,10 @@ int main(int argc, const char * argv[]) {
     while (fscanf(fp, "%s", name) == 1) //read a festival card string
     {  
         //store the parameter set
-        void* ptr;
         printf("%s\n", name);
-        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FEST, 0, 0, 0, 0);
+        void* ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FEST, 0, 0, 0, 0);
+        smmdb_addTail(SMMNODE_OBJTYPE_FEST, ptr); 
+        smm_festival_nr++; //세라는 지시가 있었나?? 설명 다시 보자... 
     }
     fclose(fp);
     printf("Total number of festival cards : %i\n", smm_festival_nr);

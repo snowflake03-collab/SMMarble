@@ -12,25 +12,23 @@
 #define MAX_NODENR      100
 #define MAX_NODETYPE    7
 
-     
 
-
-#define GRADE_A+        0
+#define GRADE_Ap        0
 #define GRADE_A0        1
-#define GRADE_A-        2
-#define GRADE_B+        3
+#define GRADE_Am        2
+#define GRADE_Bp        3
 #define GRADE_B0        4
-#define GRADE_B-        5
-#define GRADE_C+        6
+#define GRADE_Bm        5
+#define GRADE_Cp        6
 #define GRADE_C0        7
-#define GRADE_C-        8
-#define GRADE_D+        9
+#define GRADE_Cm        8
+#define GRADE_Dp        9
 #define GRADE_D0        10
-#define GRADE_D-        11
+#define GRADE_Dm        11
 #define GRADE_F         12
 
 
-static char smmObj_NodeName[MAX_GRADE][MAX_CHARNAME] = {
+static char smmObj_NodeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] = {
        "A+",
        "A0",
        "A-",
@@ -115,15 +113,17 @@ int smmObj_getObjectgrade(void *ptr)
       return (objPtr -> grade);
 }
 
+#if 0
 char* smmObj_getTypeName(int node_type)
 {
       smmObj_object_t* objPtr = (smmObj_object_t*)ptr; 
       return (objPtr -> type);     
 }
+#endif
 
 
 
-
+#if 0
 //food Ä«µå 
 static int smm_food_nr = 0;
 
@@ -163,6 +163,7 @@ int smmObj_genFestival(char* name)
     
     return smm_festival_nr;
 }
+#endif
 
 #if 0
 //element to string
