@@ -204,20 +204,37 @@ void actionNode(int player)
              
         case SMMNODE_TYPE_GOTOLAB:       
              break;
-             
-        //2번, 3번 짠 이후에  
+              
         case SMMNODE_TYPE_FOODCHANGE:
-             //근데 무작위뢰 골라야하니까
-             {int chosen_Food = rand() % smm_food_nr; 
-             
-             //음식카드 고르면 -> 에너지를 보충할 수가 있어 
-             //smm_players[player].energy += smm_food[chosen_Food].energy;
-             }
-             //static 때문에 바로 가져오질 못하는 듯... 
+             {
+                  //choose random food 
+                  int chosen_Food = rand() % smm_food_nr; 
+                  //bring that food's address
+                  void* food_ptr = smmdb_getData(LISTNO_FOODCARD, chosen_Food);
+                  
+                  if(food_ptr != NULL)
+                  {
+                  int food_energy = smmObj_getObjectEnergy(food_ptr);
+                  char* food_name = smmObj_getObjectName(food_ptr);
+                  
+                  smm_players[player].energy += food_energy;
+                  printf(" [%s]를 섭취, %s의 에너지가 %d만큼 보충됨\n", 
+                  food_name, smm_players[player].name, food_energy);
+                  }
+             } 
              break;
              
              
         case SMMNODE_TYPE_FESTIVAL:       
+             {
+                  int chosen_FEST = rand() % smm_festival_nr;
+                  
+                  void* fest_ptr = smmdb_getData(LISTNO_FESTCARD, chosen_FEST);             
+                         smm_players[player].energy += food_energy;
+                         printf(" [%s]를 섭취, %s의 에너지가 %d만큼 보충됨\n", 
+                         food_name, smm_players[player].name, food_energy);
+                  }
+             }
              break;
              
 
@@ -300,7 +317,7 @@ int main(int argc, const char * argv[]) {
         //store the parameter set
         printf("%s\n", name);
         void* ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FEST, 0, 0, 0, 0);
-        smmdb_addTail(SMMNODE_OBJTYPE_FEST, ptr); 
+        smmdb_addTail(LISTNO_FESTCARD, ptr); 
         smm_festival_nr++; //세라는 지시가 있었나?? 설명 다시 보자... 
     }
     fclose(fp);
@@ -365,6 +382,3 @@ int main(int argc, const char * argv[]) {
     system("PAUSE");
     return 0;
 }
-
-//지금 해결해야 할 문제: 종료조건이 제대로 작동을 안해, 
-//....? 아닌가?? 아직 작성 안한 부분 때문에 그런가?  
