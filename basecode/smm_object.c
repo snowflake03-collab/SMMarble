@@ -121,17 +121,3 @@ char* smmObj_getTypeName(int node_type)
 }
 #endif
 
-
-
-#if 0
-//element to string
-char* smmObj_getNodeName(smmNode_e type)
-{
-    return smmNodeName[type];
-}
-
-char* smmObj_getGradeName(smmGrade_e grade)
-{
-    return smmGradeName[grade];
-}
-#endif
