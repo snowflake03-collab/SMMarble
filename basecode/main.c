@@ -51,14 +51,14 @@ void printGrades(int player) //print grade history of the player
      int size = smmdb_len(LISTNO_OFFSET_GRADE + player);
      
      //그 player가 수강한 모든 과목과 점수를 출력
-     printf("수강한 과목 목록\n"); 
+     printf("%s의 수강한 과목 목록\n", smm_players[player].name); 
      for(i = 0; i < size; i++)
      {
            void* gradePtr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
      
-           printf("%s - 성적: %d \n", smmObj_getObjectName(gradePtr), smmObj_getObjectgrade(gradePtr)); 
+           printf("%s - 성적: %s \n", smmObj_getObjectName(gradePtr), smmObj_getObjectgrade(gradePtr)); 
      } 
-     printf("현재 %s의 총 학점: %d\n",  smm_players[player].name , smm_players[player].credit);
+     printf("현재 %s의 총 수강 학점: %d / 졸업학점(%d)\n",  smm_players[player].name , smm_players[player].credit, GRADUATE_CREDIT);
 }
 
 void* findGrade(int player, char *lectureName) //find the grade from the player's grade history
@@ -156,7 +156,6 @@ void generatePlayers(int n, int initEnergy) //generate a new player
 int rolldie(int player)
 {
     char c;
-    
     while(1)
     {
          printf(" Press any key to roll a die (press g to see grade): ");
@@ -166,7 +165,11 @@ int rolldie(int player)
     
          if (c == 'g')
          {
-               printGrades(player);
+               int i;
+               for(i = 0; i < smm_player_nr; i++)
+               {
+                    printGrades(i);
+               }
                continue;
          }
          else
@@ -191,20 +194,31 @@ void actionNode(int player)
     {
         
         case SMMNODE_TYPE_LECTURE:
-        if(findGrade(player, smmObj_getObjectName(ptr)) == NULL) //해당하는 과목명, 들었던 과목 재수강안함 
+             
+        
+        if(findGrade(player, smmObj_getObjectName(ptr)) == NULL) //전에 들었던 강의는 듣지 않음 
         {
-             //자꾸 강의가 아닌데 노드에 추가되어버리는 문제.. 
              if(credit > 0)
              { 
-                  smm_players[player].credit += credit; 
-                  smm_players[player].energy -= energy;
-             
-                  grade = rand() % SMMNODE_MAX_GRADE;
-             
-                  gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, 
-                  type , credit, energy, grade);
+                  int lecture_registor = rand() % 2;
                   
-                    smmdb_addTail(LISTNO_OFFSET_GRADE+player, gradePtr);
+                  if(lecture_registor == 1)
+                  { 
+                       printf("해당 강의를 수강합니다.\n"); 
+                       smm_players[player].credit += credit; 
+                       smm_players[player].energy -= energy;
+             
+                       grade = rand() % SMMNODE_MAX_GRADE;
+             
+                       gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, 
+                       type , credit, energy, grade);
+                  
+                       smmdb_addTail(LISTNO_OFFSET_GRADE+player, gradePtr);
+                  }
+                  else
+                  {
+                       printf("강의를 드랍합니다.\n"); 
+                  }
              }
         }
              break;
@@ -213,8 +227,31 @@ void actionNode(int player)
              smm_players[player].energy += energy;
              break;
              
-        case SMMNODE_TYPE_LABORATORY:   
-                 
+        //실험 성공 기준값은 내가 정하는 건가?? 
+        case SMMNODE_TYPE_LABORATORY: 
+             
+             
+             printf("실험실 입장"); 
+             #if 1
+             //일단 실험실에 왔으면 실험을 먼저 하기 
+             smm_players[player].energy -= energy;
+             
+             while(1)
+             {
+                  int success_exper = 3;
+                  int die = (rand()%MAX_DIE + 1);
+                  //주사위 굴려서 기준값과 비교, 이상일 경우 실험 종료 
+                  if(die >= success_exper)
+                  {
+                       printf("실험 종료");
+                       break;
+                  } 
+                  else
+                  {
+                       printf("여전히 실험중"); 
+                  }
+             #endif
+             }    
              break;
              
         case SMMNODE_TYPE_HOME:       
@@ -385,9 +422,6 @@ int main(int argc, const char * argv[]) {
 
     
 
-
-#if 1
-
     turn = 0;
     //3. SM Marble game starts ---------------------------------------------------------------------------------
     while (isGraduated() == 0) //is anybody graduated?
@@ -406,6 +440,8 @@ int main(int argc, const char * argv[]) {
         //pos = pos + 2;
         //지나가도 action 해야되는 경우 if문으로 넣어주자 
         
+        
+        
 		//4-4. take action at the destination node of the board
         actionNode(turn);
         
@@ -413,7 +449,7 @@ int main(int argc, const char * argv[]) {
         turn = (turn + 1)% smm_player_nr;
     }
     
-#endif
+
 
     free(smm_players);
 
