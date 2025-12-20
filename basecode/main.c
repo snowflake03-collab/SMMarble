@@ -15,8 +15,6 @@
 #define FOODFILEPATH "marbleFoodConfig.txt"
 #define FESTFILEPATH "marbleFestivalConfig.txt"
 
-//으아아악! 무한 루프에 걸렸어!! 
-
 //board configuration parameters 
 static int smm_board_nr;
 static int smm_food_nr;
@@ -38,14 +36,12 @@ smm_player_t *smm_players;
 //prototyping
 void generatePlayers(int n, int initEnergy); //generate a new player & 초기 에너지 설정 
 void printPlayerStatus(void); //print all player status at the beginning of each turn
-
+void printGrades(int player); //print all the grade history of the player
 
 //function prototypes
 #if 0
 float calcAverageGrade(int player); //calculate average grade of the player
 smmGrade_e takeLecture(int player, char *lectureName, int credit); //take the lecture (insert a grade of the player)
-
-void printGrades(int player); //print all the grade history of the player
 #endif
 
 
@@ -54,15 +50,15 @@ void printGrades(int player) //print grade history of the player
      int i; 
      int size = smmdb_len(LISTNO_OFFSET_GRADE + player);
      
-     //그 player가 수강한 모든 과목과 점수를 출력  
+     //그 player가 수강한 모든 과목과 점수를 출력
+     printf("수강한 과목 목록\n"); 
      for(i = 0; i < size; i++)
      {
            void* gradePtr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
-           printf(" %s\n",
-                    smmObj_getObjectName(gradePtr),
-                    smmObj_getObjectgrade(gradePtr)); //smmObj_getObjectEnergy
-     }
-     printf("%s의 총 수강학점: %d\n", smm_players[player].name ,smm_players[player].credit);  
+     
+           printf("%s - 성적: %d \n", smmObj_getObjectName(gradePtr), smmObj_getObjectgrade(gradePtr)); 
+     } 
+     printf("현재 %s의 총 학점: %d\n",  smm_players[player].name , smm_players[player].credit);
 }
 
 void* findGrade(int player, char *lectureName) //find the grade from the player's grade history
@@ -166,7 +162,8 @@ int rolldie(int player)
          printf(" Press any key to roll a die (press g to see grade): ");
          c = getchar();
          while( getchar() != '\n');
-
+         printPlayerStatus();
+    
          if (c == 'g')
          {
                printGrades(player);
@@ -196,15 +193,19 @@ void actionNode(int player)
         case SMMNODE_TYPE_LECTURE:
         if(findGrade(player, smmObj_getObjectName(ptr)) == NULL) //해당하는 과목명, 들었던 과목 재수강안함 
         {
-             smm_players[player].credit += credit; 
-             smm_players[player].energy -= energy;
+             //자꾸 강의가 아닌데 노드에 추가되어버리는 문제.. 
+             if(credit > 0)
+             { 
+                  smm_players[player].credit += credit; 
+                  smm_players[player].energy -= energy;
              
-             grade = rand() % SMMNODE_MAX_GRADE;
+                  grade = rand() % SMMNODE_MAX_GRADE;
              
-             gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, 
-             type , credit, energy, SMMNODE_MAX_GRADE);
-             
-             smmdb_addTail(LISTNO_OFFSET_GRADE+player, gradePtr);
+                  gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, 
+                  type , credit, energy, grade);
+                  
+                    smmdb_addTail(LISTNO_OFFSET_GRADE+player, gradePtr);
+             }
         }
              break;
              

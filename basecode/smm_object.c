@@ -28,7 +28,7 @@
 #define GRADE_F         12
 
 
-static char smmObj_NodeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] = {
+static char smmObj_GradeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] = {
        "A+",
        "A0",
        "A-",
@@ -44,7 +44,7 @@ static char smmObj_NodeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] = {
        "F"
 };
 
-static char smmObj_GradeName[MAX_NODETYPE][MAX_CHARNAME] = {
+static char smmObj_NodeName[MAX_NODETYPE][MAX_CHARNAME] = {
        "lecture",
        "restaurant",
        "laboratory",
@@ -72,8 +72,8 @@ void* smmObj_genObject(char* name, int objType, int type, int credit, int energy
     ptr = (smmObj_object_t*)malloc(sizeof(smmObj_object_t));
     
     strcpy(ptr -> name, name);
+    ptr -> objType = objType;  
     ptr -> type = type;
-    ptr -> objType = objType;
     ptr -> credit = credit;
     ptr -> energy = energy;
     ptr -> grade = grade;
@@ -93,7 +93,15 @@ int smmObj_getObjectType(void *ptr)
 {
      smmObj_object_t* objPtr = (smmObj_object_t*)ptr; 
      return (objPtr -> objType);
+}     
+
+ 
+char* smmObj_getObjectTypeName(void *ptr)
+{
+      smmObj_object_t* objPtr = (smmObj_object_t*)ptr; 
+      return smmObj_NodeName[objPtr -> grade];     
 }
+
 
 int smmObj_getObjectCredit(void *ptr)
 {
@@ -107,17 +115,12 @@ int smmObj_getObjectEnergy(void *ptr)
      return (objPtr -> energy);
 }
 
-int smmObj_getObjectgrade(void *ptr)
+char* smmObj_getObjectgrade(void *ptr)
 {
       smmObj_object_t* objPtr = (smmObj_object_t*)ptr; 
-      return (objPtr -> grade);
+      return smmObj_GradeName[objPtr -> grade];
 }
 
-#if 0
-char* smmObj_getTypeName(int node_type)
-{
-      smmObj_object_t* objPtr = (smmObj_object_t*)ptr; 
-      return (objPtr -> type);     
-}
-#endif
+
+
 
