@@ -6,21 +6,6 @@
 //
 
 #if 0
-더 구현해야 할 것 고민
-
-실험 노드에 도착 -> 실험중 상태로 전환, 실험실로 이동 -> 주사위 굴려서 기준값 이상이면 실험종료, 미만이면 이동x 실험중 상태로 머무름
-계속 주사위 굴리는 건가? 기준값 이상이 나올 때까지?
-실험실 노드에 도착 -> 이건 그냥 아무 상호작용 없이 지나가는 것인듯?
-
-goforward
-집을 지나는 순간에... 에너지 보충
-집 노드에 멈추지 않아도
-결국 한칸씩 이동하니까 집을 거칠 경우
-goforward는 집 노드에만 해당하는건가?
-하긴 전채 노드에 다 적용될경우 굳이 어떤 노드에서 멈출지 정하는 의미가 없잖아
-
-축제카드에서 미션 수행 부분은 구현이 되었었나??
-
 각 노드에서 뭘 하는지 printf를 통해 표시해주자
 뭘 하고 돌아다니는지를 모르겠단 말이지...
 
@@ -61,6 +46,7 @@ typedef struct{
         int credit;
         int flag_graduated;
         int energy;
+        int is_experimenting; //실험 중인지 아닌지를 저장할 변수 
 } smm_player_t;
 
 //동적 메모리 할당 
@@ -141,6 +127,17 @@ void goForward(int player, int step)
     {   
         //1칸씩 나온 횟수 채울 때까지 이동하면서 어디 있는지 출력 
         smm_players[player].pos = (smm_players[player].pos + 1) % smm_board_nr;
+        
+        //우리집의 경우 지나치기만 해도 energy 충전 
+        if(smm_players[player].pos == 0)
+        {
+             void* home_ptr = smmdb_getData(LISTNO_NODE, 0);
+             int home_energy = smmObj_getObjectEnergy(home_ptr);
+             smm_players[player].energy += home_energy;
+              printf("%s가 집을 지나치면서 에너지를 %d만큼 충전\n", smm_players[player].name, home_energy); 
+        }
+        
+    
         current_node_ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
         printf("    => moved to %i(%s)\n", smm_players[player].pos, smmObj_getObjectName(current_node_ptr));
     }
@@ -260,31 +257,12 @@ void actionNode(int player)
              smm_players[player].energy += energy;
              break;
              
-        //실험 성공 기준값은 내가 정하는 건가?? 
         case SMMNODE_TYPE_LABORATORY: 
              
-             
              printf("실험실 입장"); 
-             #if 1
              
+             smm_players[player].is_experimenting = 1; 
              smm_players[player].energy -= energy;
-             
-             while(1)
-             {
-                  int success_exper = 3;
-                  int die = (rand()%MAX_DIE + 1);
-                  //주사위 굴려서 기준값과 비교, 이상일 경우 실험 종료 
-                  if(die >= success_exper)
-                  {
-                       printf("실험 종료");
-                       break;
-                  } 
-                  else
-                  {
-                       printf("여전히 실험중"); 
-                  }
-             #endif
-             }    
              break;
              
         case SMMNODE_TYPE_HOME:       
@@ -299,6 +277,8 @@ void actionNode(int player)
         case SMMNODE_TYPE_GOTOLAB:     
              {
                    int i;
+                   smm_players[player].is_experimenting = 1;
+                   printf("   %s가 실험실(%d)로 이동함.\n", smm_players[player].name, smm_players[player].pos);
                    for(i = 0; i < smm_board_nr; i++)
                    {
                         void* node_ptr = smmdb_getData(LISTNO_NODE, i);
@@ -308,7 +288,7 @@ void actionNode(int player)
                               break;                                   
                         }
                    }     
-                   printf("   %s가 실험실(%d)로 이동함.\n", smm_players[player].name, smm_players[player].pos);
+             
              }
              break;
               
@@ -458,23 +438,51 @@ int main(int argc, const char * argv[]) {
     turn = 0;
     //3. SM Marble game starts ---------------------------------------------------------------------------------
     while (isGraduated() == 0) //is anybody graduated?
-    {
-        int die_result;
-        
-        //4-1. initial printing
-        printPlayerStatus();
-        
-        //4-2. die rolling (if not in experiment)
-        die_result = rolldie(turn);
+    {  
+         int die_result;
+         
+         //4-1. initial printing
+         printPlayerStatus();
+
+         //if in experiment
+         if(smm_players[turn].is_experimenting == 1)
+         {
+              printf("실험을 해야해!!!!"); 
+              //실험 중일 경우  
+              int success_exper = 3;
+              int die = (rand()%MAX_DIE + 1);
+              die_result = die;
+              
+              //실험 시되마다 에너지 소모
+              smm_players[turn].energy -= 3;
+              printf("실험 시도, 에너지 소모"); 
+              
+              //주사위 굴려서 기준값과 비교, 이상일 경우 실험 종료 
+              printf("실험 종료 가능?"); 
+              if(die >= success_exper)
+              {
+                   printf("결과값: %d, 실험 종료", die);
+                   smm_players[turn].is_experimenting = 0;
+              } 
+              else
+              {
+                  //실험을 종료하지 못할 경우 이 노드는 여전히 실험실 노드에 머무름 
+                   printf("결과값: %d, 여전히 실험중", die); 
+                   turn = (turn + 1) % smm_player_nr;
+                   continue;
+              }
+          }
+          else
+          {           
+              //4-2. die rolling (if not in experiment)
+              die_result = rolldie(turn);    
+          }
+          
         
         //4-3. go forward
         goForward(turn, die_result);
         
-        //pos = pos + 2;
-        //지나가도 action 해야되는 경우 if문으로 넣어주자 
-        
-        
-        
+
 		//4-4. take action at the destination node of the board
         actionNode(turn);
         
