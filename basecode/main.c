@@ -144,10 +144,11 @@ void printPlayerStatus(void) //print all player status at the beginning of each 
      {
          void* ptr = smmdb_getData(LISTNO_NODE, smm_players[i].pos);
  
-         printf("%s - position:%i(%s), credit:%i, energy:%i\n", 
+         printf("%s - position:%i(%s), experimenting?:%s, credit:%i, energy:%i\n", 
          smm_players[i].name, 
          smm_players[i].pos, 
          smmObj_getObjectName(ptr), 
+         (smm_players[i].is_experimenting? "YES": "NO"), 
          smm_players[i].credit, 
          smm_players[i].energy);
      }
@@ -439,7 +440,9 @@ int main(int argc, const char * argv[]) {
          //if in experiment
          if(smm_players[turn].is_experimenting == 1)
          {
-              printf("실험을 해야해!!!!"); 
+              printf("실험을 해야해\n");
+              printf("실험을 하려면..."); 
+              while(getchar() != '\n');
               //실험 중일 경우  
               int success_exper = 3;
               int die = (rand()%MAX_DIE + 1);
@@ -447,13 +450,13 @@ int main(int argc, const char * argv[]) {
               
               //실험 시되마다 에너지 소모
               smm_players[turn].energy -= 3;
-              printf("실험 시도, 에너지 소모"); 
+              printf("실험 시도, 에너지 소모\n"); 
               
               //주사위 굴려서 기준값과 비교, 이상일 경우 실험 종료 
-              printf("실험 종료 가능?"); 
+              printf("실험 종료 가능?\n"); 
               if(die >= success_exper)
               {
-                   printf("결과값: %d, 실험 종료", die);
+                   printf("결과값: %d, 실험 종료\n", die);
                    smm_players[turn].is_experimenting = 0;
               } 
               else
