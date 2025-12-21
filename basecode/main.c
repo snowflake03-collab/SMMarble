@@ -5,24 +5,6 @@
 //  Created by Juyeop Kim on 2023/11/05.
 //
 
-#if 0
-각 노드에서 뭘 하는지 printf를 통해 표시해주자
-뭘 하고 돌아다니는지를 모르겠단 말이지...
-
-, 턴 시작 시 모든 플레이어의 상태 (위치, 실험
-중 상태, 누적 학점, 현재 에너지)를 출력해야 함
--> 어랏? 턴 종료시가 아니었어??
-아!! g를 눌렀을 경우,, 아닌가? 그거는
-
-구현해야 할 부분
-- 게임 종료 조건과 종료 시 동작은 다음과 같음
-? 플레이어 중 한명이 GRADUATE_CREDIT 이상의 학점을 이수하고 집으로 이동하면 게임이 즉시 종료됨
-? 게임 종료와 함께 졸업한 플레이어가 수강한 강의의 이름, 학점, 성적을 각각 출력
-
-
-#endif
-
-
 #include <time.h>
 #include <string.h>
 #include "smm_object.h"
@@ -88,7 +70,7 @@ void* findGrade(int player, char *lectureName) //find the grade from the player'
       for(i = 0; i < size; i++)
       {
           void *ptr = smmdb_getData(LISTNO_OFFSET_GRADE+player, i);
-          if (strcmp((char*)smmObj_getObjectName(ptr), lectureName) == 0) //strcmp를 통해 그 과목 들었었는지 검사 
+          if (strcmp((char*)smmObj_getObjectName(ptr), lectureName) == 0) //strcmp를 통해 그 과목을 수강한 적 있는지 검사 
           {
               return ptr;
           }
@@ -128,14 +110,24 @@ void goForward(int player, int step)
         //1칸씩 나온 횟수 채울 때까지 이동하면서 어디 있는지 출력 
         smm_players[player].pos = (smm_players[player].pos + 1) % smm_board_nr;
         
-        //우리집의 경우 지나치기만 해도 energy 충전 
+        //우리집을 통과하거나 멈추었을 때 
         if(smm_players[player].pos == 0)
-        {
+        {    //우리집의 경우 지나치기만 해도 energy 충전 
              void* home_ptr = smmdb_getData(LISTNO_NODE, 0);
              int home_energy = smmObj_getObjectEnergy(home_ptr);
              smm_players[player].energy += home_energy;
               printf("%s가 집을 지나치면서 에너지를 %d만큼 충전\n", smm_players[player].name, home_energy); 
         }
+        
+        //졸업 학점이 넘은 상태라면 졸업하기 
+        if(smm_players[player].pos == 0)
+        {
+             if(smm_players[player].credit >= GRADUATE_CREDIT){
+                  smm_players[player].flag_graduated = 1;
+                  printf("%s가 졸업!\n", smm_players[player].name);
+                  return; 
+             }                           
+        } 
         
     
         current_node_ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
