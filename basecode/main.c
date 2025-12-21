@@ -5,6 +5,39 @@
 //  Created by Juyeop Kim on 2023/11/05.
 //
 
+#if 0
+더 구현해야 할 것 고민
+
+실험 노드에 도착 -> 실험중 상태로 전환, 실험실로 이동 -> 주사위 굴려서 기준값 이상이면 실험종료, 미만이면 이동x 실험중 상태로 머무름
+계속 주사위 굴리는 건가? 기준값 이상이 나올 때까지?
+실험실 노드에 도착 -> 이건 그냥 아무 상호작용 없이 지나가는 것인듯?
+
+goforward
+집을 지나는 순간에... 에너지 보충
+집 노드에 멈추지 않아도
+결국 한칸씩 이동하니까 집을 거칠 경우
+goforward는 집 노드에만 해당하는건가?
+하긴 전채 노드에 다 적용될경우 굳이 어떤 노드에서 멈출지 정하는 의미가 없잖아
+
+축제카드에서 미션 수행 부분은 구현이 되었었나??
+
+각 노드에서 뭘 하는지 printf를 통해 표시해주자
+뭘 하고 돌아다니는지를 모르겠단 말이지...
+
+, 턴 시작 시 모든 플레이어의 상태 (위치, 실험
+중 상태, 누적 학점, 현재 에너지)를 출력해야 함
+-> 어랏? 턴 종료시가 아니었어??
+아!! g를 눌렀을 경우,, 아닌가? 그거는
+
+구현해야 할 부분
+- 게임 종료 조건과 종료 시 동작은 다음과 같음
+? 플레이어 중 한명이 GRADUATE_CREDIT 이상의 학점을 이수하고 집으로 이동하면 게임이 즉시 종료됨
+? 게임 종료와 함께 졸업한 플레이어가 수강한 강의의 이름, 학점, 성적을 각각 출력
+
+
+#endif
+
+
 #include <time.h>
 #include <string.h>
 #include "smm_object.h"
@@ -56,7 +89,7 @@ void printGrades(int player) //print grade history of the player
      {
            void* gradePtr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
      
-           printf("%s - 성적: %s \n", smmObj_getObjectName(gradePtr), smmObj_getObjectgrade(gradePtr)); 
+           printf("과목명: %s - 성적 : %s \n", smmObj_getObjectName(gradePtr), smmObj_getObjectgrade(gradePtr)); 
      } 
      printf("현재 %s의 총 수강 학점: %d / 졸업학점(%d)\n",  smm_players[player].name , smm_players[player].credit, GRADUATE_CREDIT);
 }
@@ -233,7 +266,7 @@ void actionNode(int player)
              
              printf("실험실 입장"); 
              #if 1
-             //일단 실험실에 왔으면 실험을 먼저 하기 
+             
              smm_players[player].energy -= energy;
              
              while(1)
